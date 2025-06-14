@@ -3,8 +3,8 @@ import azure.functions as func
 from datetime import datetime
 import os
 import requests
-import pandas as pd
-# import io
+# import pandas as pd
+import io
 # import os
 # from azure.storage.blob import BlobServiceClient
 
