@@ -1,13 +1,11 @@
 import logging
 import azure.functions as func
-import requests
-import pandas as pd
-import io
-import os
-from azure.storage.blob import BlobServiceClient
-from datetime import datetime
-
-app = func.FunctionApp()
+# import requests
+# import pandas as pd
+# import io
+# import os
+# from azure.storage.blob import BlobServiceClient
+# from datetime import datetime
 
 
 @app.timer_trigger(schedule="0 5 * * * *", arg_name="myTimer", run_on_startup=False,
