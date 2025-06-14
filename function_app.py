@@ -1,10 +1,10 @@
 import logging
 import azure.functions as func
-# import requests
-# import pandas as pd
-# import io
-# import os
-# from azure.storage.blob import BlobServiceClient
+import requests
+import pandas as pd
+import io
+import os
+from azure.storage.blob import BlobServiceClient
 from datetime import datetime
 
 app = func.FunctionApp()
