@@ -7,6 +7,8 @@ import azure.functions as func
 # from azure.storage.blob import BlobServiceClient
 # from datetime import datetime
 
+app = func.FunctionApp()
+
 
 @app.timer_trigger(schedule="0 5 * * * *", arg_name="myTimer", run_on_startup=False,
                    use_monitor=False)
