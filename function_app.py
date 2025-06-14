@@ -5,8 +5,7 @@ import os
 import requests
 # import pandas as pd
 import io
-# import os
-# from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient
 
 
 app = func.FunctionApp()
