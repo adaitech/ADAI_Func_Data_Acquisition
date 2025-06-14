@@ -19,14 +19,15 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     if myTimer.past_due:
         logging.info('The timer is past due!')
 
-    # Configuração do logger
+    logging.info('Configuração do logger')
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
+
     logger = logging.getLogger(__name__)
 
-    # Variaveis que se alteram por conjunto de dados
+    logging.info('Variaveis que se alteram por conjunto de dados')
     url = "https://inradar.com.br/api/v1/member_history"
     params = {"limit": 50, "offset": 0}
     name_file = "member_history"
@@ -37,7 +38,11 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     CONTAINER_NAME = "raw"
     BLOB_NAME = f"{name_file}/{name_file}_{data_formatada}.csv"
 
-    # Construir a connection string
+    logging.info('ACCOUNT_NAME' + ACCOUNT_NAME)
+    logging.info('ACCOUNT_KEY' + ACCOUNT_KEY)
+    logging.info('BLOB_NAME' + BLOB_NAME)
+
+    logging.info('Construir a connection string')
     connection_string = (
         f"DefaultEndpointsProtocol=https;"
         f"AccountName={ACCOUNT_NAME};"
@@ -45,7 +50,7 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         f"EndpointSuffix=core.windows.net"
     )
 
-    # Cabeçalhos de autenticação
+    logging.info('Cabeçalhos de autenticação')
     headers = {
         "Authorization": "ApiKey yurifillippo:9d20cd67a03a19a2bbcf7cac0ea11b2409e11bc7",
         "Content-Type": "application/json;charset=UTF-8",
@@ -68,6 +73,8 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
             logger.error("Resposta crua:", response.text)
             break
 
+        logging.info('data' + str(data))
+
         data = data.get("objects", [])  # Ponto-chave da resposta
 
         if not data:
@@ -77,9 +84,10 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         todos_size.extend(data)
         params["offset"] += params["limit"]
 
-    # Se dados foram coletados
+    logging.info('Se dados foram coletados')
     if todos_size:
-        # Converte todos os dados em DataFrame
+
+        logging.info('Converte todos os dados em DataFrame')
         df = pd.json_normalize(todos_size)
 
         print(f"Quantidade de dados: {df.shape[0]}")
@@ -87,12 +95,12 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         logger.info("Colunas disponíveis:")
         print(df.columns.tolist())
 
-        # Salvar tudo
+        logging.info('Salvar tudo')
         buffer = io.BytesIO()
         df.to_csv(buffer, index=False)
         buffer.seek(0)
 
-        # Conectar ao Azure Blob Storage
+        logging.info('Conectar ao Azure Blob Storage')
         blob_service_client = BlobServiceClient.from_connection_string(
             connection_string)
         blob_client = blob_service_client.get_blob_client(
