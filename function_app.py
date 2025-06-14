@@ -2,7 +2,7 @@ import logging
 import azure.functions as func
 from datetime import datetime
 import os
-# import requests
+import requests
 # import pandas as pd
 # import io
 # import os
