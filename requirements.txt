@@ -6,5 +6,4 @@ logging
 azure-functions
 requests
 pandas
-azure.storage.blob
 datetime
