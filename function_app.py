@@ -3,7 +3,7 @@ import azure.functions as func
 from datetime import datetime
 import os
 import requests
-# import pandas as pd
+import pandas as pd
 import io
 # from azure.storage.blob import BlobServiceClient
 
@@ -106,10 +106,10 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         blob_client = blob_service_client.get_blob_client(
             container=CONTAINER_NAME, blob=BLOB_NAME)
 
-        # Enviar o arquivo para o blob
+        logger.info('Enviar o arquivo para o blob')
         blob_client.upload_blob(buffer, overwrite=True)
 
-        logger.info(f"Arquivo completo salvo como '{name_file}.csv'")
+        logger.info("Arquivo completo salvo como '{name_file}.csv'")
     else:
         logger.info("Nenhum dado coletado da API.")
 
