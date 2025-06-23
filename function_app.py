@@ -16,9 +16,6 @@ app = func.FunctionApp()
 def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     logging.info('Python timer trigger function started.')
 
-    if myTimer.past_due:
-        logging.info('The timer is past due!')
-
     logging.info('Configuração do logger')
     logging.basicConfig(
         level=logging.INFO,
@@ -33,8 +30,8 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     name_file = "member_history"
     data_formatada = datetime.today().strftime('%Y%m%d')
 
-    ACCOUNT_NAME = os.environ.get(ACCOUNT_NAME)
-    ACCOUNT_KEY = os.environ.get(ACCOUNT_KEY)
+    ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
+    ACCOUNT_KEY = os.environ.get('ACCOUNT_KEY')
     CONTAINER_NAME = "raw"
     BLOB_NAME = f"{name_file}/{name_file}_{data_formatada}.csv"
 
@@ -57,14 +54,15 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         "Channel": "control_panel",
         "Origin": "https://admin.inchurch.com.br",
         "Referer": "https://admin.inchurch.com.br/",
-        "Accept": "application/json, text/plain, /"
+        "Accept": "application/json, text/plain, */*"
     }
 
     todos_size = []
 
     while True:
         logger.info(f"Linhas de dados coletadas: {params['offset']}")
-        response = requests.get(url, headers=headers, params=params)
+        response = requests.get(url, headers=headers,
+                                params=params, verify=False)
 
         try:
             data = response.json()
@@ -102,7 +100,7 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
 
         logging.info('Conectar ao Azure Blob Storage')
         blob_service_client = BlobServiceClient.from_connection_string(
-            connection_string)
+            connection_string),
         blob_client = blob_service_client.get_blob_client(
             container=CONTAINER_NAME, blob=BLOB_NAME)
 
@@ -114,3 +112,8 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         logger.info("Nenhum dado coletado da API.")
 
     logging.info('Python timer trigger function executed.')
+
+
+# if __name__ == '__main__':
+#     # For local testing, pass None or a mock TimerRequest
+#     ADAI_Func_Data_Acquisition(None)
