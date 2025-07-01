@@ -7,6 +7,14 @@ import requests
 import io
 #from azure.storage.blob import BlobServiceClient
 
+# Configuração global do logger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
+
 
 app = func.FunctionApp()
 
@@ -114,5 +122,9 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
 
 
 if __name__ == '__main__':
-     # For local testing, pass None or a mock TimerRequest
-     ADAI_Func_Data_Acquisition(None)
+    try:
+        # For local testing, pass None or a mock TimerRequest
+        ADAI_Func_Data_Acquisition(None)
+    except Exception as e:
+        logger.error("Erro ao fazer upload para o Blob Storage.")
+        logger.error(str(e))
