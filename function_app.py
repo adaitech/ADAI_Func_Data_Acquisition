@@ -35,20 +35,50 @@ def flatten_dict(d, parent_key='', sep='.'):
 @app.timer_trigger(schedule="0 0 5 * * *", arg_name="myTimer", run_on_startup=False,
                    use_monitor=False)
 def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
-    logging.info('Python timer trigger function started.')
+    logger.info('Python timer trigger function started.')
 
-    logging.info(
-        'Acessar os dados do Blob Storage e carregar no banco de dados relacional.')
+    logger.info('Variaveis que se alteram por conjunto de dados')
+    url = "https://inradar.com.br/api/v1/member_history"
 
-    logging.info('Formatar os dados com as regras de negócios.')
+    params = {
+        "limit": 50,
+        "offset": 0
+    }
 
-    logging.info('Criar todas as tabelas para leituras dos dados.')
+    name_file = "member_history"
 
-    logging.info('Executar o script de carga.')
+    data_formatada = datetime.today().strftime('%Y%m%d')
 
-    logging.info('Executar a confereência da carga.')
+    ACCOUNT_NAME = "adairawdatastore"
+    ACCOUNT_KEY = "9rpvbn2UDWIdEZ7CxbuVZwNCjU0PSJ2X1BYqukn2fSULlmRfs3r/nxUYBSqMOocEKoxGlUl+5KxM+AStni+Uvw=="
+    CONTAINER_NAME = "raw"
+    BLOB_NAME = f"{name_file}/{name_file}_{data_formatada}.csv"
 
-    logging.info('Python timer trigger function executed.')
+    logger.info(f'ACCOUNT_NAME: {ACCOUNT_NAME}')
+    logger.info(f'ACCOUNT_KEY: {ACCOUNT_KEY}')
+    logger.info(f'BLOB_NAME: {BLOB_NAME}')
+
+    logger.info('Construir a connection string')
+    connection_string = (
+        f"DefaultEndpointsProtocol=https;"
+        f"AccountName={ACCOUNT_NAME};"
+        f"AccountKey={ACCOUNT_KEY};"
+        f"EndpointSuffix=core.windows.net"
+    )
+
+    logger.info('Cabeçalhos de autenticação')
+    headers = {
+        "Authorization": "ApiKey yurifillippo:9d20cd67a03a19a2bbcf7cac0ea11b2409e11bc7",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Channel": "control_panel",
+        "Origin": "https://admin.inchurch.com.br",
+        "Referer": "https://admin.inchurch.com.br/",
+        "Accept": "application/json, text/plain, */*"
+    }
+
+    todos_size = []
+
+    logger.info('Python timer trigger function executed.')
 
 
 # if __name__ == '__main__':
