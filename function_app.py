@@ -3,9 +3,9 @@ import azure.functions as func
 from datetime import datetime
 import os
 import requests
-# import pandas as pd
+import pandas as pd
 import io
-# from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient
 
 
 app = func.FunctionApp()
@@ -35,9 +35,9 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     CONTAINER_NAME = "raw"
     BLOB_NAME = f"{name_file}/{name_file}_{data_formatada}.csv"
 
-    logging.info('ACCOUNT_NAME' + ACCOUNT_NAME)
-    logging.info('ACCOUNT_KEY' + ACCOUNT_KEY)
-    logging.info('BLOB_NAME' + BLOB_NAME)
+    logging.info(f'ACCOUNT_NAME: {ACCOUNT_NAME}')
+    logging.info(f'ACCOUNT_KEY: {ACCOUNT_KEY}')
+    logging.info(f'BLOB_NAME: {BLOB_NAME}')
 
     logging.info('Construir a connection string')
     connection_string = (
@@ -99,13 +99,12 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         buffer.seek(0)
 
         logging.info('Conectar ao Azure Blob Storage')
-        blob_service_client = BlobServiceClient.from_connection_string(
-            connection_string),
-        blob_client = blob_service_client.get_blob_client(
-            container=CONTAINER_NAME, blob=BLOB_NAME)
+        # Conectar ao Azure Blob Storage
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
 
-        logger.info('Enviar o arquivo para o blob')
-        blob_client.upload_blob(buffer, overwrite=True)
+        # Enviar o arquivo para o blob
+        blob_client.upload_blob(buffer, blob_type="BlockBlob", overwrite=True, max_concurrency=4)
 
         logger.info("Arquivo completo salvo como '{name_file}.csv'")
     else:
@@ -114,6 +113,6 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     logging.info('Python timer trigger function executed.')
 
 
-# if __name__ == '__main__':
-#     # For local testing, pass None or a mock TimerRequest
-#     ADAI_Func_Data_Acquisition(None)
+if __name__ == '__main__':
+     # For local testing, pass None or a mock TimerRequest
+     ADAI_Func_Data_Acquisition(None)
