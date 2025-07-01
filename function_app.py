@@ -82,7 +82,6 @@ def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         logger.info(f"Linhas de dados coletadas: {params['offset']}")
         response = requests.get(url, headers=headers,
                                 params=params, verify=False)
-
         try:
             data = response.json()
         except Exception as e:
@@ -91,15 +90,6 @@ def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
             break
 
         logger.info('data' + str(data))
-
-        data = data.get("objects", [])  # Ponto-chave da resposta
-
-        if not data:
-            logger.info("Nenhum dado retornado. Fim da coleta.")
-            break
-
-        todos_size.extend(data)
-        params["offset"] += params["limit"]
 
     logger.info('Se dados foram coletados')
 
