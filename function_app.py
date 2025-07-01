@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 app = func.FunctionApp()
 
+@app.timer_trigger(schedule="0 0 5 * * *", arg_name="myTimer", run_on_startup=False,
+                   use_monitor=False)
+
 # Função auxiliar para achatar dicts
 def flatten_dict(d, parent_key='', sep='.'):
     """
@@ -27,8 +30,7 @@ def flatten_dict(d, parent_key='', sep='.'):
             items.append((new_key, v))
     return dict(items)
 
-@app.timer_trigger(schedule="0 5 * * * *", arg_name="myTimer", run_on_startup=False,
-                   use_monitor=False)
+
 def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
 
     logging.info('Variaveis que se alteram por conjunto de dados')
