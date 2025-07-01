@@ -1,20 +1,19 @@
 import logging
 import azure.functions as func
 from datetime import datetime
-#import os
+# import os
 import requests
 import io
-#from azure.storage.blob import BlobServiceClient
-#import csv
+# from azure.storage.blob import BlobServiceClient
+# import csv
 
 # Configuração do logger
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 0 5 * * *", arg_name="myTimer", run_on_startup=False,
-                   use_monitor=False)
 
 # Função auxiliar para achatar dicts
 def flatten_dict(d, parent_key='', sep='.'):
@@ -31,6 +30,8 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
+@app.timer_trigger(schedule="0 0 5 * * *", arg_name="myTimer", run_on_startup=False,
+                   use_monitor=False)
 def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
 
     logging.info('Variaveis que se alteram por conjunto de dados')
@@ -103,7 +104,8 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         logging.info('Flatten dos dados')
         flattened_data = [flatten_dict(item) for item in todos_size]
 
-        logging.info(f"Quantidade de registros coletados: {len(flattened_data)}")
+        logging.info(
+            f"Quantidade de registros coletados: {len(flattened_data)}")
 
         if flattened_data:
             # Pegar todos os campos (headers) presentes nos dados flatten
@@ -127,8 +129,10 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
 
             # Conectar ao Azure Blob Storage
             logging.info('Conectar ao Azure Blob Storage')
-            blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-            blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
+            blob_service_client = BlobServiceClient.from_connection_string(
+                connection_string)
+            blob_client = blob_service_client.get_blob_client(
+                container=CONTAINER_NAME, blob=BLOB_NAME)
 
             # Enviar o arquivo para o blob
             blob_client.upload_blob(bytes_buffer, overwrite=True)
@@ -142,6 +146,6 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     logging.info('Python timer trigger function executed.')
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    logger.info("Iniciando aplicacao")
+#     logger.info("Iniciando aplicacao")
