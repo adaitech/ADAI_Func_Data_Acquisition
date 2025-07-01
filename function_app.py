@@ -8,26 +8,26 @@ import io
 # import csv
 
 # Configuração do logger
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# logging.basicConfig(level=logging.INFO,
+#                     format='%(asctime)s - %(levelname)s - %(message)s')
+# logger = logging.getLogger(__name__)
 
 app = func.FunctionApp()
 
 
-# Função auxiliar para achatar dicts
-def flatten_dict(d, parent_key='', sep='.'):
-    """
-    Achata um dict aninhado em um dict plano.
-    """
-    items = []
-    for k, v in d.items():
-        new_key = f"{parent_key}{sep}{k}" if parent_key else k
-        if isinstance(v, dict):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
+# # Função auxiliar para achatar dicts
+# def flatten_dict(d, parent_key='', sep='.'):
+#     """
+#     Achata um dict aninhado em um dict plano.
+#     """
+#     items = []
+#     for k, v in d.items():
+#         new_key = f"{parent_key}{sep}{k}" if parent_key else k
+#         if isinstance(v, dict):
+#             items.extend(flatten_dict(v, new_key, sep=sep).items())
+#         else:
+#             items.append((new_key, v))
+#     return dict(items)
 
 
 @app.timer_trigger(schedule="0 0 5 * * *", arg_name="myTimer", run_on_startup=False,
