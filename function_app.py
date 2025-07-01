@@ -143,7 +143,8 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
 if __name__ == '__main__':
     try:
         # For local testing, pass None or a mock TimerRequest
-        ADAI_Func_Data_Acquisition(None)
+        #ADAI_Func_Data_Acquisition(None)
+        logger.info("Iniciando aplicacao")
     except Exception as e:
         logger.error("Erro ao fazer upload para o Blob Storage.")
         logger.error(str(e))
