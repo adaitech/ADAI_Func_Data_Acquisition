@@ -2,7 +2,7 @@ import logging
 import azure.functions as func
 from datetime import datetime
 # import os
-# import requests
+import requests
 # import pandas as pd
 # import io
 # from azure.storage.blob import BlobServiceClient
@@ -77,6 +77,31 @@ def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     }
 
     todos_size = []
+
+    while True:
+        logger.info(f"Linhas de dados coletadas: {params['offset']}")
+        response = requests.get(url, headers=headers,
+                                params=params, verify=False)
+
+        try:
+            data = response.json()
+        except Exception as e:
+            logger.error("Erro ao converter JSON:", e)
+            logger.error("Resposta crua:", response.text)
+            break
+
+        logger.info('data' + str(data))
+
+        data = data.get("objects", [])  # Ponto-chave da resposta
+
+        if not data:
+            logger.info("Nenhum dado retornado. Fim da coleta.")
+            break
+
+        todos_size.extend(data)
+        params["offset"] += params["limit"]
+
+    logger.info('Se dados foram coletados')
 
     logger.info('Python timer trigger function executed.')
 
