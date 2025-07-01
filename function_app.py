@@ -1,17 +1,31 @@
 import logging
 import azure.functions as func
 from datetime import datetime
-import os
+#import os
 import requests
-import pandas as pd
 import io
-from azure.storage.blob import BlobServiceClient
+#from azure.storage.blob import BlobServiceClient
+import csv
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = func.FunctionApp()
+
+# Função auxiliar para achatar dicts
+def flatten_dict(d, parent_key='', sep='.'):
+    """
+    Achata um dict aninhado em um dict plano.
+    """
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 @app.timer_trigger(schedule="0 5 * * * *", arg_name="myTimer", run_on_startup=False,
                    use_monitor=False)
@@ -84,29 +98,42 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     logging.info('Se dados foram coletados')
     if todos_size:
 
-        logging.info('Converte todos os dados em DataFrame')
-        df = pd.json_normalize(todos_size)
+        logging.info('Flatten dos dados')
+        flattened_data = [flatten_dict(item) for item in todos_size]
 
-        logging.info(f"Quantidade de dados: {df.shape[0]}")
+        logging.info(f"Quantidade de registros coletados: {len(flattened_data)}")
 
-        logger.info("Colunas disponíveis:")
-        logging.info(df.columns.tolist())
+        if flattened_data:
+            # Pegar todos os campos (headers) presentes nos dados flatten
+            all_keys = set()
+            for item in flattened_data:
+                all_keys.update(item.keys())
 
-        logging.info('Salvar tudo')
-        buffer = io.BytesIO()
-        df.to_csv(buffer, index=False)
-        buffer.seek(0)
+            # Organiza as colunas em ordem alfabética (opcional)
+            fieldnames = sorted(list(all_keys))
 
-        logging.info('Conectar ao Azure Blob Storage')
+            logging.info("Colunas disponíveis: %s", fieldnames)
 
-        # Conectar ao Azure Blob Storage
-        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-        blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
+            # Escreve CSV no buffer
+            buffer = io.StringIO()
+            writer = csv.DictWriter(buffer, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(flattened_data)
 
-        # Enviar o arquivo para o blob
-        blob_client.upload_blob(buffer, overwrite=True)
+            csv_data = buffer.getvalue().encode('utf-8')
+            bytes_buffer = io.BytesIO(csv_data)
 
-        logger.info("Arquivo completo salvo como '{name_file}.csv'")
+            # Conectar ao Azure Blob Storage
+            logging.info('Conectar ao Azure Blob Storage')
+            blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+            blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
+
+            # Enviar o arquivo para o blob
+            blob_client.upload_blob(bytes_buffer, overwrite=True)
+
+            logger.info("Arquivo completo salvo como '%s'", BLOB_NAME)
+        else:
+            logger.info("Não há dados para salvar.")
     else:
         logger.info("Nenhum dado coletado da API.")
 
