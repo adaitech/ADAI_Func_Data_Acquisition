@@ -11,7 +11,22 @@ from datetime import datetime
 app = func.FunctionApp()
 
 
-@app.timer_trigger(schedule="0 5 * * * *", arg_name="myTimer", run_on_startup=False,
+# Função auxiliar para achatar dicts
+def flatten_dict(d, parent_key='', sep='.'):
+    """
+    Achata um dict aninhado em um dict plano.
+    """
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+@app.timer_trigger(schedule="0 0 5 * * *", arg_name="myTimer", run_on_startup=False,
                    use_monitor=False)
 def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     logging.info('Python timer trigger function started.')
