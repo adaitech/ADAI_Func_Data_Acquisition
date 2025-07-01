@@ -11,6 +11,12 @@ from datetime import datetime
 app = func.FunctionApp()
 
 
+# Configuração do logger
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+
 # Função auxiliar para achatar dicts
 def flatten_dict(d, parent_key='', sep='.'):
     """
