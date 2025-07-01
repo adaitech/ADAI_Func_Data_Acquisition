@@ -79,18 +79,33 @@ def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     todos_size = []
 
     while True:
-        logger.info(f"Linhas de dados coletadas: {params['offset']}")
-        response = requests.get(url, headers=headers,
-                                params=params, verify=False)
-        try:
-            data = response.json()
-        except Exception as e:
-            logger.error("Erro ao converter JSON:", e)
-            logger.error("Resposta crua:", response.text)
+        logger.info(f'Fazendo request para a URL: {url} com params: {params}')
+        response = requests.get(url, headers=headers, params=params)
+
+        if response.status_code != 200:
+            logger.error(
+                f'Erro ao fazer request: {response.status_code} - {response.text}')
             break
 
-        logger.info('data' + str(data))
+        data = response.json()
 
+        if not data['data']:
+            logger.info('Nenhum dado encontrado, encerrando a coleta.')
+            break
+
+        todos_size.append(len(data['data']))
+        logger.info(
+            f'Tamanho dos dados coletados nesta iteração: {len(data["data"])}')
+
+        # Achatar os dados
+        flattened_data = [flatten_dict(item) for item in data['data']]
+
+        # Aqui você pode salvar os dados em um arquivo ou banco de dados
+        # Exemplo: salvar em CSV (pode ser adaptado para salvar no Azure Blob Storage)
+        # df = pd.DataFrame(flattened_data)
+        # df.to_csv(f"{name_file}_{data_formatada}.csv", index=False)
+
+        params['offset'] += params['limit']
     logger.info('Se dados foram coletados')
 
     logger.info('Python timer trigger function executed.')
