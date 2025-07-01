@@ -5,7 +5,7 @@ from datetime import datetime
 import requests
 import io
 #from azure.storage.blob import BlobServiceClient
-import csv
+#import csv
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
