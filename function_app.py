@@ -3,9 +3,9 @@ import azure.functions as func
 from datetime import datetime
 import os
 import requests
-import pandas as pd
+#import pandas as pd
 import io
-from azure.storage.blob import BlobServiceClient
+#from azure.storage.blob import BlobServiceClient
 
 
 app = func.FunctionApp()
@@ -32,7 +32,7 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
 
     ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
     ACCOUNT_KEY = os.environ.get('ACCOUNT_KEY')
-    CONTAINER_NAME = "adairawdatastore"
+    CONTAINER_NAME = "raw"
     BLOB_NAME = f"{name_file}/{name_file}_{data_formatada}.csv"
 
     logging.info(f'ACCOUNT_NAME: {ACCOUNT_NAME}')
