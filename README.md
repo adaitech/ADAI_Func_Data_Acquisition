@@ -6,3 +6,4 @@ Esta função é responsável por adquirir os dados de suas fontes originais e a
 Data - Descrição - Desenvolvedor 
 
 14/06/2024 - Criação do repositório - Jonatan Saraiva
+02/07/2024 - Ajustes no plano
