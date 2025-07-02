@@ -5,5 +5,5 @@
 azure-functions
 azure-storage-blob
 datetime
-requests == 3.8.0
+requests == 2.32.4
 pandas
