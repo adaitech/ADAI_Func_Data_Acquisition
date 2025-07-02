@@ -1,18 +1,39 @@
 import logging
 import azure.functions as func
-from datetime import datetime
-import os
-import requests
-import io
+# from datetime import datetime
+# import os
+# import requests
+# import io
 # import pandas as pd
 # from azure.storage.blob import BlobServiceClient
 
 app = func.FunctionApp()
 
 
-@app.timer_trigger(schedule="0 5 * * * *", arg_name="myTimer", run_on_startup=False,
+# Configuração do logger
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+
+# Função auxiliar para achatar dicts
+def flatten_dict(d, parent_key='', sep='.'):
+    """
+    Achata um dict aninhado em um dict plano.
+    """
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+@app.timer_trigger(schedule="0 0 5 * * *", arg_name="myTimer", run_on_startup=False,
                    use_monitor=False)
-def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
+def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
     logging.info('Python timer trigger function started.')
 
     if myTimer.past_due:
@@ -105,3 +126,8 @@ def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         logger.info("Nenhum dado coletado da API.")
 
     logging.info('Python timer trigger function executed.')
+
+
+# if __name__ == '__main__':
+#     # For local testing, you can call the function directly
+#     # Func_Data_Acquisition(func.TimerRequest())
