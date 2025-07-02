@@ -1,10 +1,9 @@
 import logging
 import azure.functions as func
 from datetime import datetime
-import os
 import io
 import csv
-# import requests
+import requests
 from azure.storage.blob import BlobServiceClient
 
 app = func.FunctionApp()
@@ -150,4 +149,4 @@ def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
 
 # if __name__ == '__main__':
 #     # For local testing, you can call the function directly
-#     # Func_Data_Acquisition(func.TimerRequest())
+#     Func_Data_Acquisition(None)
