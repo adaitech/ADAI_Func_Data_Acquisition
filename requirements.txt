@@ -6,4 +6,3 @@ azure-functions
 azure-storage-blob
 datetime
 requests == 2.32.4
-pandas

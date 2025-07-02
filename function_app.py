@@ -4,8 +4,8 @@ from datetime import datetime
 import os
 import io
 import csv
-import requests
-# from azure.storage.blob import BlobServiceClient
+# import requests
+from azure.storage.blob import BlobServiceClient
 
 app = func.FunctionApp()
 
