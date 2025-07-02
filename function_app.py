@@ -1,70 +1,48 @@
 import logging
 import azure.functions as func
 from datetime import datetime
-# import os
+import os
 import requests
 # import pandas as pd
-# import io
+import io
 # from azure.storage.blob import BlobServiceClient
 
 
 app = func.FunctionApp()
 
 
-# Configuração do logger
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
-
-# Função auxiliar para achatar dicts
-def flatten_dict(d, parent_key='', sep='.'):
-    """
-    Achata um dict aninhado em um dict plano.
-    """
-    items = []
-    for k, v in d.items():
-        new_key = f"{parent_key}{sep}{k}" if parent_key else k
-        if isinstance(v, dict):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
-
-
-@app.timer_trigger(schedule="0 0 5 * * *", arg_name="myTimer", run_on_startup=False,
+@app.timer_trigger(schedule="0 5 * * * *", arg_name="myTimer", run_on_startup=False,
                    use_monitor=False)
-def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
-    logger.info('Python timer trigger function started.')
+def ADAI_Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
+    logging.info('Python timer trigger function started.')
 
-    logger.info('Variaveis que se alteram por conjunto de dados')
+    if myTimer.past_due:
+        logging.info('The timer is past due!')
+
+    logging.info('Configuração do logger')
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
+    logger = logging.getLogger(__name__)
+
+    logging.info('Variaveis que se alteram por conjunto de dados')
     url = "https://inradar.com.br/api/v1/member_history"
-
-    params = {
-        "limit": 50,
-        "offset": 0
-    }
-
-    # Arquivo de saída que será salvo no Azure Blob Storage
-    logger.info('Arquivo de saída que será salvo no Azure Blob Storage')
+    params = {"limit": 50, "offset": 0}
     name_file = "member_history"
-
     data_formatada = datetime.today().strftime('%Y%m%d')
 
-    # Dados de acesso ao Azure Blob Storage
-    logger.info('Dados de acesso ao Azure Blob Storage')
-    ACCOUNT_NAME = "adairawdatastore"
-    ACCOUNT_KEY = "9rpvbn2UDWIdEZ7CxbuVZwNCjU0PSJ2X1BYqukn2fSULlmRfs3r/nxUYBSqMOocEKoxGlUl+5KxM+AStni+Uvw=="
+    ACCOUNT_NAME = os.environ.get('ACCOUNT_NAME')
+    ACCOUNT_KEY = os.environ.get('ACCOUNT_KEY')
     CONTAINER_NAME = "raw"
     BLOB_NAME = f"{name_file}/{name_file}_{data_formatada}.csv"
 
-    logger.info(f'ACCOUNT_NAME: {ACCOUNT_NAME}')
-    logger.info(f'ACCOUNT_KEY: {ACCOUNT_KEY}')
-    logger.info(f'BLOB_NAME: {BLOB_NAME}')
+    logging.info('ACCOUNT_NAME' + ACCOUNT_NAME)
+    logging.info('ACCOUNT_KEY' + ACCOUNT_KEY)
+    logging.info('BLOB_NAME' + BLOB_NAME)
 
-    # Construir a connection string
-    # A connection string é usada para autenticar e acessar o Azure Blob Storage
-    logger.info('Construir a connection string')
+    logging.info('Construir a connection string')
     connection_string = (
         f"DefaultEndpointsProtocol=https;"
         f"AccountName={ACCOUNT_NAME};"
@@ -72,15 +50,14 @@ def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         f"EndpointSuffix=core.windows.net"
     )
 
-    # Cabecalhos de autenticação para o sistema da InChurch
-    logger.info('Cabeçalhos de autenticação para o sistema da InChurch')
+    logging.info('Cabeçalhos de autenticação')
     headers = {
         "Authorization": "ApiKey yurifillippo:9d20cd67a03a19a2bbcf7cac0ea11b2409e11bc7",
         "Content-Type": "application/json;charset=UTF-8",
         "Channel": "control_panel",
         "Origin": "https://admin.inchurch.com.br",
         "Referer": "https://admin.inchurch.com.br/",
-        "Accept": "application/json, text/plain, */*"
+        "Accept": "application/json, text/plain, /"
     }
 
     todos_size = []
@@ -137,8 +114,3 @@ def Func_Data_Acquisition(myTimer: func.TimerRequest) -> None:
         logger.info("Nenhum dado coletado da API.")
 
     logging.info('Python timer trigger function executed.')
-
-
-# if __name__ == '__main__':
-#     # For local testing, pass None or a mock TimerRequest
-#     Func_Data_Acquisition(None)
