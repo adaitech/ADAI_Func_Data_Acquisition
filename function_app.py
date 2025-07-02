@@ -3,7 +3,7 @@ import azure.functions as func
 from datetime import datetime
 import os
 import io
-import requests
+# import requests
 # from azure.storage.blob import BlobServiceClient
 
 app = func.FunctionApp()
