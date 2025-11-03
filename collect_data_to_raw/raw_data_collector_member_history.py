@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 url = "https://inradar.com.br/api/v1/member_history"
 
 params = {
-    "limit": 100,
+    "limit": 50,
     "offset": 0
 }
 
