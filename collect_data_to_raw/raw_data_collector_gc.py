@@ -75,24 +75,24 @@ while True:
 # Se dados foram coletados
 if todos_size:
     # Converte todos os dados em DataFrame
+    # Converte todos os dados em DataFrame
     df = pd.json_normalize(todos_size)
 
     print(f"Quantidade de dados: {df.shape[0]}")
-
     logger.info("Colunas disponíveis:")
     print(df.columns.tolist())
 
-    # Salvar tudo
-    buffer = io.BytesIO()
-    df.to_csv(buffer, index=False, encoding='utf-8')
+    # Salvar tudo em StringIO
+    buffer = io.StringIO()
+    df.to_csv(buffer, index=False)
     buffer.seek(0)
 
-    #Conectar ao Azure Blob Storage
+    # Conectar ao Azure Blob Storage
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
     blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
 
-    # Enviar o arquivo para o blob
-    blob_client.upload_blob(buffer, overwrite=True)
+    # Enviar o arquivo como bytes
+    blob_client.upload_blob(buffer.getvalue().encode('utf-8'), overwrite=True)
 
     logger.info(f"Arquivo completo salvo como '{name_file}.csv'")
 else:
