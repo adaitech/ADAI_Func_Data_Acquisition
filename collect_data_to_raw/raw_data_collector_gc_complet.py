@@ -4,6 +4,7 @@ import logging
 import io
 from azure.storage.blob import BlobServiceClient
 from datetime import datetime
+import os
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -52,47 +53,57 @@ headers = {
 todos_size = []
 
 while True:
-    logger.info(f"Linhas de dados coletadas: {params['offset']}")
-    response = requests.get(url, headers=headers, params=params)
-
     try:
-        data = response.json()
+        logger.info(f"Linhas de dados coletadas: {params['offset']}")
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()  # levanta erro se HTTP não for 200
+
+        try:
+            data = response.json()
+        except Exception as e:
+            logger.error(f"Erro ao converter JSON: {e}")
+            logger.error(f"Resposta crua: {response.text}")
+            break
+
+        data = data.get("objects", [])  # Ponto-chave da resposta
+
+        if not data:
+            logger.info("Nenhum outro dado retornado. Fim da coleta.")
+            break
+
+        todos_size.extend(data)
+        params["offset"] += params["limit"]
+
     except Exception as e:
-        logger.error("Erro ao converter JSON:", e)
-        logger.error("Resposta crua:", response.text)
+        logger.error(f"Erro na requisição HTTP: {e}")
         break
 
-    data = data.get("objects", [])  # Ponto-chave da resposta
 
-    if not data:
-        logger.info("Nenhum dado retornado. Fim da coleta.")
-        break
+try:
+    # Se dados foram coletados
+    if todos_size:
+        # Converte todos os dados em DataFrame
+        df = pd.json_normalize(todos_size)
 
-    todos_size.extend(data)
-    params["offset"] += params["limit"]
+        print(f"Quantidade de dados: {df.shape[0]}")
+        logger.info("Colunas disponíveis:")
+        print(df.columns.tolist())
 
-# Se dados foram coletados
-if todos_size:
-    # Converte todos os dados em DataFrame
-    df = pd.json_normalize(todos_size)
+        # Salvar tudo em StringIO
+        buffer = io.StringIO()
+        df.to_csv(buffer, index=False)
+        buffer.seek(0)
 
-    print(f"Quantidade de dados: {df.shape[0]}")
+        # Conectar ao Azure Blob Storage
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
 
-    logger.info("Colunas disponíveis:")
-    print(df.columns.tolist())
+        # Enviar o arquivo como bytes
+        blob_client.upload_blob(buffer.getvalue().encode('utf-8'), overwrite=True)
 
-    # Salvar tudo em StringIO
-    buffer = io.StringIO()
-    df.to_csv(buffer, index=False)
-    buffer.seek(0)
+        logger.info(f"Arquivo completo salvo como '{name_file}.csv'")
+    else:
+        logger.info("Nenhum dado coletado da API.")
 
-    # Conectar ao Azure Blob Storage
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
-
-    # Enviar o arquivo como bytes
-    blob_client.upload_blob(buffer.getvalue().encode('utf-8'), overwrite=True)
-
-    logger.info(f"Arquivo completo salvo como '{name_file}.csv'")
-else:
-    logger.info("Nenhum dado coletado da API.")
+except Exception as e:
+    logger.error(f"Erro ao processar ou enviar os dados: {e}")
