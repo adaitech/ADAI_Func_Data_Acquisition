@@ -84,7 +84,7 @@ if todos_size:
 
     # Salvar tudo
     buffer = io.BytesIO()
-    df.to_csv(buffer, index=False)
+    df.to_csv(buffer, index=False, encoding='utf-8')
     buffer.seek(0)
 
     #Conectar ao Azure Blob Storage
